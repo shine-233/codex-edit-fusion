@@ -39,14 +39,8 @@ export function seekSequence(
   if (pattern.length === 0) return start;
   if (pattern.length > lines.length) return null;
 
-  let searchStart = start;
-  if (eof && lines.length >= pattern.length) {
-    const eofStart = lines.length - pattern.length;
-    searchStart =
-      updateFileMode === 'NormalizeToLf' ? eofStart : Math.max(eofStart, start);
-  }
-
-  const last = lines.length - pattern.length;
+  const attempt = (searchStart: number): number | null => {
+    const last = lines.length - pattern.length;
   const rowMatches = (
     i: number,
     eq: (a: string, b: string) => boolean,
@@ -69,9 +63,25 @@ export function seekSequence(
   for (let i = searchStart; i <= last; i++) {
     if (rowMatches(i, (a, b) => a.trim() === b.trim())) return i;
   }
-  // Pass 4: Unicode punctuation normalization (mirrors git apply fuzziness)
-  for (let i = searchStart; i <= last; i++) {
-    if (rowMatches(i, (a, b) => normalise(a) === normalise(b))) return i;
+    // Pass 4: Unicode punctuation normalization (mirrors git apply fuzziness)
+    for (let i = searchStart; i <= last; i++) {
+      if (rowMatches(i, (a, b) => normalise(a) === normalise(b))) return i;
+    }
+    return null;
   }
+
+  const eofStart =
+    eof && lines.length >= pattern.length ? lines.length - pattern.length : null;
+  const primary =
+    eofStart === null
+      ? start
+      : updateFileMode === 'NormalizeToLf'
+        ? eofStart
+        : Math.max(eofStart, start);
+
+  // First try anchored at end-of-file, then fall back to `start` (docstring).
+  const anchored = attempt(primary);
+  if (anchored !== null) return anchored;
+  if (primary !== start) return attempt(start);
   return null;
 }
