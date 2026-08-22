@@ -25,8 +25,12 @@ describe('seekSequence (ported from seek_sequence.rs)', () => {
     const patch = v(['value = "test"', 'other - thing']);
     expect(seekSequence(file, patch, 0, false, mode)).toBe(0);
   });
-  it('eof anchoring applies pattern at end when asked', () => {
+  it('eof miss falls back to search from start', () => {
     const file = v(['a', 'END', 'b']);
+    expect(seekSequence(file, v(['END']), 0, true, mode)).toBe(1);
+  });
+  it('eof anchoring matches at end when pattern sits there', () => {
+    const file = v(['x', 'y', 'END']);
     expect(seekSequence(file, v(['END']), 0, true, mode)).toBe(2);
   });
 });
