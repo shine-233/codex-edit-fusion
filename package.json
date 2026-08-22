@@ -1,11 +1,25 @@
 {
-  "name": "@shine233/codex-edit-fusion",
+  "name": "codex-edit-fusion",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "types": "src/index.ts",
   "description": "Fuzzy patch application grafted onto dsh atomic writes (from openai/codex apply-patch, Apache-2.0)",
-  "scripts": {"typecheck":"tsc --noEmit","test":"vitest run"},
-  "devDependencies": {"typescript":"^5.6.0","vitest":"^2.1.9"}
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
 }
